@@ -11,6 +11,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import *
 from PyQt5 import QtCore
 from ui_main_page import Ui_MainWindow
+from db.mysql_db_pool import *
 
 
 # 登录窗口
@@ -137,7 +138,15 @@ class LoginPage(QDialog, Ui_Form):
     def check_login(self):
         # 如果登录校验通过，跳转至主页面，并设置QDialog为accept
 
-        if self.lineEdit.text() == '':
+        username = self.lineEdit.text()
+        password = self.lineEdit_2.text()
+
+        conn = MyPymysqlPool("notdbMysql")
+
+        sql_ = 'SELECT * FROM flask_blog.auth_user WHERE username={0} AND PASSWORD={1}'.format(repr(username), repr(password))
+        result_ = conn.getOne(sql_)
+
+        if username == '':
             QMessageBox.warning(self,
                                 '警告',
                                 '用户名不能为空',
@@ -145,7 +154,7 @@ class LoginPage(QDialog, Ui_Form):
                                 )
             self.lineEdit.setFocus()
 
-        elif self.lineEdit_2.text() == '':
+        elif password == '':
             QMessageBox.warning(self,
                                 '警告',
                                 '密码不能为空',
@@ -153,7 +162,7 @@ class LoginPage(QDialog, Ui_Form):
                                 )
             self.lineEdit_2.setFocus()
 
-        elif self.lineEdit.text() == 'admin' and self.lineEdit_2.text() == '123456':
+        elif result_:
             self.save_login_info()
             self.accept()
 
